@@ -2,7 +2,6 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
-import time
 
 class Robot_Hands():
 
@@ -19,6 +18,7 @@ class Robot_Hands():
             min_tracking_confidence=0.5
         )
     
+
     def get_hands_data(self, frame):
 
         h, w, _ = frame.shape
@@ -38,13 +38,12 @@ class Robot_Hands():
         
                 return lm_list
     
-
     def get_finger_states(self, lm_list):
         if not lm_list: return []
 
         fingers = []
 
-        if lm_list[self.tips_id[0]][1] > lm_list[self.tips_id[0] - 1][1]:
+        if lm_list[self.tips_id[0]][1] < lm_list[self.tips_id[0] - 1][1]:
             fingers.append(1)
 
         else:
@@ -59,6 +58,7 @@ class Robot_Hands():
                 fingers.append(0)
                 
         return fingers
+
 
     def hand_cmd(self, frame):
 
@@ -96,9 +96,13 @@ class Robot_Hands():
 
         cap = cv2.VideoCapture(0)
 
-        if not cap.isOpened():
-            print("Não foi possível abrir a câmera")
+        cap.set(3, 1280)
+        cap.set(4, 720)
 
+        if not cap.isOpened():
+            print("Erro na câmera")
+            return
+        
         while True:
 
             ret, frame = cap.read()
@@ -106,6 +110,8 @@ class Robot_Hands():
             if not ret:
                 print("Não foi possível capturar o frame")
                 break
+
+            frame  = cv2.flip(frame, 1)
 
             self.hand_cmd(frame)
 
